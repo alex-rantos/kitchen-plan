@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kitchen plan v2 — revised</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+
+  --zone-wet: #dbe7f5;
+  --zone-wet-line: #6b93be;
+  --zone-cook: #f8ddc8;
+  --zone-cook-line: #cf9159;
+  --zone-tall: #d9ecdd;
+  --zone-tall-line: #6faa87;
+  --zone-corner: #e8dcf0;
+  --zone-corner-line: #9d7fbb;
+  --zone-table: #fbeec4;
+  --zone-table-line: #c99a2e;
+  --plan-wall: #232323;
+  --plan-floor: #fbfaf7;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+
+  --zone-wet: #33475e;
+  --zone-wet-line: #85acd2;
+  --zone-cook: #573f2c;
+  --zone-cook-line: #d9a473;
+  --zone-tall: #2e4738;
+  --zone-tall-line: #85bd9b;
+  --zone-corner: #453a52;
+  --zone-corner-line: #b79ad2;
+  --zone-table: #4d4127;
+  --zone-table-line: #d9b45c;
+  --plan-wall: #d6d3d1;
+  --plan-floor: #303030;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 32px 24px 64px;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+}
+.wrap { max-width: 1080px; margin: 0 auto; }
+header { margin-bottom: 8px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.01em; }
+.sub { color: var(--cp-text-muted); font-size: 14px; margin: 0; }
+.badge {
+  display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px;
+  border-radius: 999px; background: var(--cp-accent-soft); color: var(--cp-accent);
+  border: 1px solid var(--cp-accent); white-space: nowrap;
+}
+button.toggle {
+  font: inherit; font-size: 13px; padding: 6px 14px; border-radius: 0.625rem;
+  border: 1px solid var(--cp-border-strong); background: var(--cp-surface);
+  color: var(--cp-text); cursor: pointer;
+}
+button.toggle:hover { background: var(--cp-surface-soft); }
+
+.card {
+  background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 16px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+  padding: 20px; margin-top: 20px;
+}
+.card h2 { font-size: 16px; margin: 0 0 12px; letter-spacing: 0.01em; }
+svg { display: block; width: 100%; height: auto; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 16px; font-size: 13px; color: var(--cp-text-muted); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid var(--cp-border-strong); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 800px) { .grid2 { grid-template-columns: 1fr; } }
+
+ul.tight { margin: 0; padding-left: 18px; font-size: 14px; }
+ul.tight li { margin-bottom: 9px; }
+ul.tight li b { color: var(--cp-text); }
+.was { color: var(--cp-text-soft); font-size: 13px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--cp-border); }
+th { color: var(--cp-text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+td.num { font-family: Consolas, "Courier New", Courier, monospace; }
+tr.total td { border-bottom: none; font-weight: 700; }
+.ok { color: var(--cp-success); font-weight: 600; }
+
+.callout {
+  border-left: 3px solid var(--cp-accent); background: var(--cp-accent-soft);
+  padding: 12px 16px; border-radius: 0 10px 10px 0; font-size: 14px; margin-top: 4px;
+}
+footer { margin-top: 24px; font-size: 12px; color: var(--cp-text-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>Kitchen plan — revised</h1>
+    <p class="sub">3.20 × 3.10 m room · 2.8 m ceiling · all sizes in centimetres · fillers included in every run</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <span class="badge">v2</span>
+    <button class="toggle" onclick="const h=document.documentElement;h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark')">Theme</button>
+  </div>
+</header>
+
+<div class="card">
+<svg viewBox="0 0 880 830" role="img" aria-label="Revised kitchen floor plan">
+  <defs>
+    <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="var(--cp-border-strong)" stroke-width="2.4"/>
+    </pattern>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 z" fill="var(--cp-text-muted)"/>
+    </marker>
+    <marker id="arw2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 z" fill="var(--cp-accent)"/>
+    </marker>
+  </defs>
+
+  <g font-family='"Segoe UI", Aptos, Calibri, sans-serif'>
+
+    <!-- floor -->
+    <rect x="120" y="120" width="640" height="620" fill="var(--plan-floor)"/>
+
+    <!-- walls -->
+    <g stroke="var(--plan-wall)" stroke-width="9" fill="none">
+      <path d="M115.5 120 L764.5 120"/>
+      <path d="M115.5 740 L764.5 740"/>
+      <path d="M120 115.5 L120 744.5"/>
+      <path d="M760 115.5 L760 744.5"/>
+    </g>
+
+    <!-- door openings (red dashed on wall) -->
+    <g stroke="var(--cp-danger)" stroke-width="7" stroke-dasharray="13 8" stroke-linecap="round">
+      <line x1="122" y1="120" x2="278" y2="120"/>
+      <line x1="122" y1="740" x2="318" y2="740"/>
+    </g>
+    <text x="200" y="146" font-size="12.5" fill="var(--cp-danger)" text-anchor="middle" font-weight="600">80 cm opening</text>
+    <text x="220" y="722" font-size="12.5" fill="var(--cp-danger)" text-anchor="middle" font-weight="600">100 cm opening</text>
+
+    <!-- ============ TOP RUN ============ -->
+    <rect x="280" y="120" width="10" height="120" fill="url(#hatch)" stroke="var(--cp-border-strong)" stroke-width="1"/>
+    <g stroke-width="2">
+      <rect x="290" y="120" width="120" height="120" fill="var(--zone-wet)" stroke="var(--zone-wet-line)" rx="3"/>
+      <rect x="410" y="120" width="120" height="120" fill="var(--zone-wet)" stroke="var(--zone-wet-line)" rx="3"/>
+      <rect x="530" y="120" width="100" height="120" fill="var(--cp-surface-soft)" stroke="var(--cp-border-strong)" rx="3"/>
+      <rect x="640" y="120" width="120" height="120" fill="var(--zone-corner)" stroke="var(--zone-corner-line)" rx="3"/>
+    </g>
+    <rect x="630" y="120" width="10" height="120" fill="url(#hatch)" stroke="var(--cp-border-strong)" stroke-width="1"/>
+    <g fill="var(--cp-text)" text-anchor="middle">
+      <text x="350" y="175" font-size="14" font-weight="700">DISHWASHER</text>
+      <text x="350" y="196" font-size="12.5" fill="var(--cp-text-muted)">60 · or 45 slimline</text>
+      <text x="470" y="175" font-size="14" font-weight="700">SINK</text>
+      <text x="470" y="196" font-size="12.5" fill="var(--cp-text-muted)">60 · single bowl</text>
+      <text x="580" y="168" font-size="14" font-weight="700">BIN +</text>
+      <text x="580" y="186" font-size="14" font-weight="700">DRAWERS</text>
+      <text x="580" y="206" font-size="12.5" fill="var(--cp-text-muted)">50</text>
+      <text x="700" y="175" font-size="14" font-weight="700">CORNER</text>
+      <text x="700" y="196" font-size="12.5" fill="var(--cp-text-muted)">carousel · 60×60</text>
+    </g>
+
+    <!-- ============ RIGHT RUN ============ -->
+    <rect x="640" y="240" width="120" height="10" fill="url(#hatch)" stroke="var(--cp-border-strong)" stroke-width="1"/>
+    <g stroke-width="2">
+      <rect x="640" y="250" width="120" height="120" fill="var(--zone-cook)" stroke="var(--zone-cook-line)" rx="3"/>
+      <rect x="640" y="370" width="120" height="80" fill="var(--cp-surface-soft)" stroke="var(--cp-border-strong)" rx="3"/>
+      <rect x="640" y="450" width="120" height="160" fill="var(--cp-surface-soft)" stroke="var(--cp-border-strong)" rx="3"/>
+      <rect x="640" y="620" width="120" height="120" fill="var(--zone-corner)" stroke="var(--zone-corner-line)" rx="3"/>
+    </g>
+    <rect x="640" y="610" width="120" height="10" fill="url(#hatch)" stroke="var(--cp-border-strong)" stroke-width="1"/>
+    <!-- burners -->
+    <g fill="none" stroke="var(--zone-cook-line)" stroke-width="2.5">
+      <circle cx="678" cy="285" r="15"/><circle cx="722" cy="285" r="15"/>
+      <circle cx="678" cy="335" r="15"/><circle cx="722" cy="335" r="15"/>
+    </g>
+    <!-- hood outline -->
+    <rect x="662" y="246" width="96" height="128" fill="none" stroke="var(--cp-text-muted)" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <text x="668" y="262" font-size="10.5" fill="var(--cp-text-muted)" font-weight="600">hood 60</text>
+    <g fill="var(--cp-text)" text-anchor="middle">
+      <text x="700" y="315" font-size="14" font-weight="700">HOB</text>
+      <text x="700" y="360" font-size="12.5" fill="var(--cp-text-muted)">60 · oven below</text>
+      <text x="700" y="405" font-size="14" font-weight="700">PREP</text>
+      <text x="700" y="424" font-size="12.5" fill="var(--cp-text-muted)">drawers · 40</text>
+      <text x="700" y="524" font-size="14" font-weight="700">DRAWERS</text>
+      <text x="700" y="544" font-size="12.5" fill="var(--cp-text-muted)">80</text>
+      <text x="700" y="675" font-size="14" font-weight="700">CORNER</text>
+      <text x="700" y="696" font-size="12.5" fill="var(--cp-text-muted)">60×60</text>
+    </g>
+
+    <!-- ============ BOTTOM RUN ============ -->
+    <rect x="320" y="620" width="10" height="120" fill="url(#hatch)" stroke="var(--cp-border-strong)" stroke-width="1"/>
+    <g stroke-width="2">
+      <rect x="330" y="620" width="120" height="120" fill="var(--zone-tall)" stroke="var(--zone-tall-line)" rx="3"/>
+      <rect x="450" y="620" width="80" height="120" fill="var(--zone-tall)" stroke="var(--zone-tall-line)" rx="3"/>
+      <rect x="530" y="620" width="100" height="120" fill="var(--cp-surface-soft)" stroke="var(--cp-border-strong)" rx="3"/>
+    </g>
+    <rect x="630" y="620" width="10" height="120" fill="url(#hatch)" stroke="var(--cp-border-strong)" stroke-width="1"/>
+    <g fill="var(--cp-text)" text-anchor="middle">
+      <text x="390" y="676" font-size="14" font-weight="700">FRIDGE</text>
+      <text x="390" y="696" font-size="12.5" fill="var(--cp-text-muted)">60 · hinge left</text>
+      <text x="490" y="676" font-size="14" font-weight="700">PANTRY</text>
+      <text x="490" y="696" font-size="12.5" fill="var(--cp-text-muted)">40 · microwave</text>
+      <text x="580" y="676" font-size="14" font-weight="700">CABINET</text>
+      <text x="580" y="696" font-size="12.5" fill="var(--cp-text-muted)">50</text>
+    </g>
+    <!-- fridge door clearance spacer note -->
+    <text x="325" y="608" font-size="10.5" fill="var(--cp-accent)" font-weight="700" text-anchor="middle">5</text>
+
+    <!-- ============ FOLD-DOWN BAR ============ -->
+    <rect x="120" y="320" width="70" height="220" fill="var(--zone-table)" stroke="var(--zone-table-line)" stroke-width="2.5" stroke-dasharray="8 5" rx="4"/>
+    <text x="155" y="430" font-size="13.5" font-weight="700" fill="var(--cp-text)" text-anchor="middle" transform="rotate(-90,155,430)">FOLD-DOWN BAR</text>
+    <text x="175" y="430" font-size="11.5" fill="var(--cp-text-muted)" text-anchor="middle" transform="rotate(-90,175,430)">110 × 35</text>
+    <g fill="var(--zone-table)" stroke="var(--zone-table-line)" stroke-width="2">
+      <circle cx="232" cy="380" r="32"/><circle cx="232" cy="480" r="32"/>
+    </g>
+    <text x="232" y="384" font-size="11" fill="var(--cp-text-muted)" text-anchor="middle">stool</text>
+    <text x="232" y="484" font-size="11" fill="var(--cp-text-muted)" text-anchor="middle">stool</text>
+
+    <!-- ============ CIRCULATION ============ -->
+    <path d="M 225 732 C 310 650 312 560 312 430 C 312 300 250 200 205 132"
+          fill="none" stroke="var(--cp-text-muted)" stroke-width="2.4" stroke-dasharray="10 8" opacity="0.75"/>
+    <text x="300" y="600" font-size="11.5" fill="var(--cp-text-muted)" text-anchor="middle" transform="rotate(-90,300,600)">door-to-door route · keep clear</text>
+
+    <!-- ============ WORK TRIANGLE ============ -->
+    <g stroke="var(--cp-accent)" stroke-width="2.6" stroke-dasharray="9 7" fill="none" opacity="0.9">
+      <path d="M 470 180 L 700 310 L 450 680 Z"/>
+    </g>
+    <g fill="var(--cp-accent)">
+      <circle cx="470" cy="180" r="4.5"/><circle cx="700" cy="310" r="4.5"/><circle cx="450" cy="680" r="4.5"/>
+    </g>
+    <g font-size="12" font-weight="700" fill="var(--cp-accent)">
+      <text x="588" y="232" text-anchor="middle">1.32 m</text>
+      <text x="600" y="508" text-anchor="middle">2.41 m</text>
+      <text x="438" y="440" text-anchor="end">2.53 m</text>
+      <text x="560" y="392" text-anchor="middle" font-size="12.5">work triangle · 6.26 m</text>
+    </g>
+
+    <!-- ============ SERVICES ============ -->
+    <circle cx="470" cy="120" r="8" fill="var(--cp-link)"/>
+    <text x="470" y="106" font-size="11.5" fill="var(--cp-link)" text-anchor="middle" font-weight="600">water + waste</text>
+    <circle cx="740" cy="120" r="8" fill="var(--cp-warning)"/>
+    <text x="742" y="106" font-size="11.5" fill="var(--cp-warning)" text-anchor="end" font-weight="600">extractor outlet</text>
+    <!-- duct -->
+    <path d="M 710 300 L 726 300 L 726 130" fill="none" stroke="var(--cp-text-muted)" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+    <text x="746" y="220" font-size="11" fill="var(--cp-text-muted)" text-anchor="middle" transform="rotate(-90,746,220)">duct ≈0.9 m</text>
+
+    <!-- sockets: existing (green) -->
+    <g fill="var(--cp-success)">
+      <rect x="276" y="114" width="12" height="12" rx="2"/>
+      <rect x="754" y="270" width="12" height="12" rx="2"/>
+      <rect x="754" y="520" width="12" height="12" rx="2"/>
+      <rect x="314" y="734" width="12" height="12" rx="2"/>
+    </g>
+    <!-- sockets: new (accent) -->
+    <g fill="var(--cp-accent)">
+      <rect x="566" y="114" width="12" height="12" rx="2"/>
+      <rect x="600" y="114" width="12" height="12" rx="2"/>
+      <rect x="754" y="400" width="12" height="12" rx="2"/>
+      <rect x="754" y="440" width="12" height="12" rx="2"/>
+    </g>
+    <text x="584" y="108" font-size="11" fill="var(--cp-accent)" text-anchor="middle" font-weight="600">2× new worktop sockets</text>
+
+    <!-- ============ DIMENSIONS ============ -->
+    <g stroke="var(--cp-text-muted)" stroke-width="1.4" fill="none" marker-start="url(#arw)" marker-end="url(#arw)">
+      <line x1="120" y1="80" x2="760" y2="80"/>
+      <line x1="812" y1="120" x2="812" y2="740"/>
+      <line x1="368" y1="243" x2="368" y2="617"/>
+    </g>
+    <text x="440" y="72" font-size="14" font-weight="700" fill="var(--cp-text)" text-anchor="middle">3.20 m</text>
+    <text x="828" y="430" font-size="14" font-weight="700" fill="var(--cp-text)" text-anchor="middle" transform="rotate(-90,828,430)">3.10 m</text>
+    <text x="356" y="430" font-size="12.5" font-weight="700" fill="var(--cp-text-muted)" text-anchor="middle" transform="rotate(-90,356,430)">190 cm aisle</text>
+
+    <!-- prep bracket -->
+    <g stroke="var(--cp-success)" stroke-width="2.4" fill="none">
+      <path d="M 786 372 L 778 372 L 778 608 L 786 608"/>
+    </g>
+    <text x="770" y="490" font-size="12" font-weight="700" fill="var(--cp-success)" text-anchor="middle" transform="rotate(-90,770,490)">120 cm unbroken prep</text>
+
+    <!-- landing zones either side of sink -->
+    <g stroke="var(--zone-wet-line)" stroke-width="2" fill="none">
+      <path d="M 292 254 L 292 262 L 408 262 L 408 254"/>
+      <path d="M 532 254 L 532 262 L 628 262 L 628 254"/>
+    </g>
+    <text x="350" y="278" font-size="11" fill="var(--zone-wet-line)" text-anchor="middle" font-weight="600">60 landing</text>
+    <text x="580" y="278" font-size="11" fill="var(--zone-wet-line)" text-anchor="middle" font-weight="600">50 landing</text>
+
+    <!-- hob offset from return wall -->
+    <g stroke="var(--cp-text-muted)" stroke-width="1.2" fill="none" marker-start="url(#arw)" marker-end="url(#arw)">
+      <line x1="622" y1="122" x2="622" y2="248"/>
+    </g>
+    <text x="610" y="186" font-size="11" fill="var(--cp-text-muted)" text-anchor="middle" transform="rotate(-90,610,186)">65 to hob</text>
+
+  </g>
+</svg>
+
+<div class="legend">
+  <span><i class="sw" style="background:var(--zone-wet);border-color:var(--zone-wet-line)"></i> Wet zone</span>
+  <span><i class="sw" style="background:var(--zone-cook);border-color:var(--zone-cook-line)"></i> Cooking</span>
+  <span><i class="sw" style="background:var(--zone-tall);border-color:var(--zone-tall-line)"></i> Tall storage</span>
+  <span><i class="sw" style="background:var(--zone-corner);border-color:var(--zone-corner-line)"></i> Corner unit</span>
+  <span><i class="sw" style="background:var(--zone-table);border-color:var(--zone-table-line)"></i> Fold-down bar</span>
+  <span><i class="sw" style="background:var(--cp-surface-soft)"></i> Base drawers</span>
+  <span><i class="sw" style="background:transparent;border-style:dashed"></i> Filler / blanking</span>
+  <span><i class="sw" style="background:var(--cp-success);border-color:var(--cp-success)"></i> Existing socket</span>
+  <span><i class="sw" style="background:var(--cp-accent);border-color:var(--cp-accent)"></i> New socket</span>
+</div>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <h2>What changed, and why</h2>
+    <ul class="tight">
+      <li><b>Every run now closes with real fillers.</b> 5 cm blanking at each internal corner so the corner door clears the neighbouring drawer handles, plus scribes at the door reveals. <span class="was">v1 summed to exactly 310 on the right wall — it would not have assembled.</span></li>
+      <li><b>Dishwasher and sink swapped.</b> The sink now has 60 cm of landing on the left and 50 cm on the right. <span class="was">v1 put the sink hard against the door opening with zero landing.</span></li>
+      <li><b>Hob moved up, prep moved down.</b> Hob sits 65 cm off the return wall (min. 40), and PREP 40 + DRAWERS 80 merge into 120 cm of unbroken worktop. <span class="was">v1's longest clear run was 80 cm.</span></li>
+      <li><b>Duct shortened ~45 cm</b> to roughly 0.9 m with one bend — box it into a bulkhead under the 2.8 m ceiling.</li>
+      <li><b>Sink→hob drops from 2.36 m to 1.32 m.</b> Triangle total 6.26 m; every leg inside the 1.2–2.7 m guideline. <span class="was">v1 was 7.05 m.</span></li>
+      <li><b>Table is now a 35 cm bar, 110 cm wide.</b> Honest about what it is, and it widens the door-to-door route. <span class="was">45 cm was too shallow to dine at anyway.</span></li>
+      <li><b>Fridge gets a 5 cm spacer</b> and a left hinge so the door clears the architrave and opens past 90° for drawer removal.</li>
+      <li><b>Four new sockets</b> — a small-appliance zone beside the sink and two above the prep run. Hob and oven each need their own dedicated circuit.</li>
+    </ul>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>The arithmetic now closes</h2>
+      <table>
+        <thead><tr><th>Run</th><th>Build-up</th><th style="text-align:right">Total</th></tr></thead>
+        <tbody>
+          <tr><td>Top<br><span class="was">3.20 m</span></td><td class="num">80 door + 5 + 60 + 60 + 50 + 5 + 60</td><td class="num" style="text-align:right">320 <span class="ok">✓</span></td></tr>
+          <tr><td>Right<br><span class="was">3.10 m</span></td><td class="num">60 corner + 5 + 60 + 40 + 80 + 5 + 60</td><td class="num" style="text-align:right">310 <span class="ok">✓</span></td></tr>
+          <tr class="total"><td>Bottom<br><span class="was">3.20 m</span></td><td class="num">100 door + 5 + 60 + 40 + 50 + 5 + 60</td><td class="num" style="text-align:right">320 <span class="ok">✓</span></td></tr>
+        </tbody>
+      </table>
+      <p class="was" style="margin:12px 0 0">If the corner units come as 65 cm blind-corner boxes rather than 60 cm squares, take the 15 cm back by specifying a 45 cm slimline dishwasher.</p>
+    </div>
+
+    <div class="card">
+      <h2>The one question that changes everything</h2>
+      <div class="callout">
+        <b>Can the 80 cm opening be closed?</b> That frees 80 cm of the water wall, removes the cross-traffic through the work triangle entirely, and lets the fridge move up to the top-left — which in turn frees the whole bottom wall for a real dining table. It is the single highest-value move available in this room. Everything above assumes it stays.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Verify on site before ordering</h2>
+  <ul class="tight" style="columns:2;column-gap:32px">
+    <li>Wall squareness — measure both diagonals; a U-shape with two corners is unforgiving.</li>
+    <li>Worktop is 62–63 cm deep on a 60 cm carcass; opposite runs each gain 2–3 cm.</li>
+    <li>Does the 100 cm opening have a swinging door? It would foul the fridge.</li>
+    <li>No window is drawn anywhere — confirm whether one exists, and where.</li>
+    <li>Radiator, gas riser, soil stack and existing pipe positions.</li>
+    <li>Consumer-unit spare ways for the hob (32 A) and oven circuits.</li>
+    <li>Hood extraction rate vs. duct length; keep bends to one.</li>
+    <li>Ceiling run to the outlet — confirm the bulkhead depth is acceptable.</li>
+  </ul>
+</div>
+
+<footer>Concept only. The bar is drawn open and folds flat to the wall. Confirm all clearances and utility positions with your installer.</footer>
+
+</div>
+</body>
+</html>
